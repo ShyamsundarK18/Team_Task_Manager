@@ -30,7 +30,7 @@ const app = express()
 // Middleware to handle cors
 app.use(
   cors({
-    origin: process.env.FRONT_END_URL || "http://localhost:5173",
+    origin: process.env.FRONT_END_URL,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -42,9 +42,7 @@ app.use(express.json())
 
 app.use(cookieParser())
 
-app.get("/", (req, res) => {
-  res.send("Task Manager Backend is running ");
-});
+
 
 
 const PORT = process.env.PORT || 3000;
