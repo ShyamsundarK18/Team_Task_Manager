@@ -15,48 +15,48 @@ dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const __dirname = path.resolve();
 
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => {
-    console.log("Database is connected")
-  })
-  .catch((err) => {
-    console.log(err)
-  })
 
-const app = express()
+
+
+const app = express();
+
+app.use(express.json());
+
+app.use(cookieParser());
+
 
 // Middleware to handle cors
 app.use(
   cors({
-    origin: process.env.FRONT_END_URL,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: "http://localhost:5173",
     credentials: true,
   })
 )
 
-// Middleware to handle JSON object in req body
-app.use(express.json())
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/reports", reportRoutes);
 
-app.use(cookieParser())
+// serve static files from "uploads" folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
+  // Catch-all route for SPA
+  app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+  });
 
+}
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("Server is running on port", PORT);
+  console.log("Server is running on port" + PORT);
 })
-
-app.use("/api/auth", authRoutes)
-app.use("/api/users", userRoutes)
-app.use("/api/tasks", taskRoutes)
-app.use("/api/reports", reportRoutes)
-
-// serve static files from "uploads" folder
-app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500
@@ -69,3 +69,12 @@ app.use((err, req, res, next) => {
     message,
   })
 })
+
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => {
+    console.log("Database is connected")
+  })
+  .catch((err) => {
+    console.log(err)
+  })
